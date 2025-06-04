@@ -21,6 +21,11 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "Backend is running";
+    }
+
     @GetMapping("/getAllStudents")
     public List<StudentEntity> getAllStudents() {
         return studentService.getAllStudents();
