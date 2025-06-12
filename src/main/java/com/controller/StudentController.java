@@ -1,6 +1,7 @@
 package com.controller;
 
 import com.dto.RequestCreateStudentDto;
+import com.dto.StudentDto;
 import com.entity.StudentEntity;
 import com.service.StudentService;
 import jakarta.validation.Valid;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/v1/students")
 public class StudentController {
     private final StudentService studentService;
 
@@ -27,16 +28,17 @@ public class StudentController {
     }
 
     @GetMapping("/getAllStudents")
-    public List<StudentEntity> getAllStudents() {
-        return studentService.getAllStudents();
+    public ResponseEntity<List<StudentDto>> getAllStudents() {
+        return new ResponseEntity<>(studentService.getAllStudents(), HttpStatus.OK);
     }
 
     @GetMapping("getStudent/{id}")
-    public ResponseEntity<StudentEntity> getStudentById(@PathVariable String id) {
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable String id) {
         return studentService.getStudentByStudentId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     @PostMapping("/create-student")
     public ResponseEntity<?> createStudent(@Valid @RequestBody RequestCreateStudentDto dto) {
@@ -57,6 +59,26 @@ public class StudentController {
             }
 
             return ResponseEntity.ok(updateStudent.get());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-phone-number")
+    public ResponseEntity<?> changePhoneNumber(@RequestParam String phoneNumber) {
+        try {
+            String changePhoneNumber = studentService.changePhoneNumber(phoneNumber);
+            return ResponseEntity.ok(changePhoneNumber);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/code-confirm")
+    public ResponseEntity<?> confirmCode(@RequestParam String code, @RequestParam String newPhoneNumber) {
+        try {
+            String confirmCode = studentService.confirmCode(code, newPhoneNumber);
+            return ResponseEntity.ok(confirmCode);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }

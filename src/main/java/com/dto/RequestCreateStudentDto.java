@@ -1,5 +1,6 @@
 package com.dto;
 
+import com.enums.GenderEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,12 +14,14 @@ import java.time.LocalDate;
 public class RequestCreateStudentDto {
     private String firstName;
     private String lastName;
+    private String username;
+    private String password;
     private String email;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
     private Integer age;
-    private String gender;
+    private GenderEnum gender;
     private String phoneNumber;
 }
