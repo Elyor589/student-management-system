@@ -1,9 +1,9 @@
 package com.dto;
 
 
-import com.entity.Course;
-import com.entity.Enrollment;
-import com.entity.StudentEntity;
+import com.dto.assignment.AssignmentDto;
+import com.dto.submission.ResponseSubmitAssignment;
+import com.entity.*;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class DtoMapper {
                 .map(DtoMapper::toEnrollmentDto)
                 .toList();
 
-        dto.setEnrollments(enrollmentDto);
+//        dto.setEnrollments(enrollmentDto);
         return dto;
     }
 
@@ -47,6 +47,33 @@ public class DtoMapper {
                 .toList();
 
         dto.setEnrollments(enrollmentDto);
+        return dto;
+    }
+
+    public static ResponseSubmitAssignment mapToSubmissionResponse(Submission submission) {
+        ResponseSubmitAssignment response = new ResponseSubmitAssignment();
+        response.setAssignmentId(submission.getAssignment().getAssignmentId());
+        response.setStudentId(submission.getStudent().getStudentId());
+        response.setSubmissionId(submission.getSubmissionId());
+        response.setStudentName(submission.getStudent().getFirstName());
+        response.setSubmitDate(submission.getSubmissionDate());
+        response.setFileName(submission.getFilePath());
+        response.setComment(submission.getComments());
+        response.setGraded(submission.isGraded());
+
+        AssignmentDto assignmentDto = convertAssignmentToAssignmentDto(submission.getAssignment());
+        response.setAssignment(assignmentDto);
+        return response;
+    }
+
+    public static AssignmentDto convertAssignmentToAssignmentDto(Assignment assignment) {
+        AssignmentDto dto = new AssignmentDto();
+        dto.setAssignmentId(assignment.getAssignmentId());
+        dto.setTitle(assignment.getTitle());
+        dto.setDescription(assignment.getDescription());
+        dto.setMaxScore(assignment.getMaxScore());
+        dto.setDueDate(assignment.getDueDate());
+//        dto.setCourse(DtoMapper.courseDto(assignment.getCourse()));
         return dto;
     }
 

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,6 +19,16 @@ public class SubmissionController {
 
     public SubmissionController(SubmissionService submissionService) {
         this.submissionService = submissionService;
+    }
+
+    @GetMapping("/getAllSubmissionByTutorId")
+    public ResponseEntity<List<?>> getAllSubmissionByTutorId(@RequestParam("tutorId") String tutorId) {
+        try {
+            List<ResponseSubmitAssignment> response = submissionService.getAllSubmissionsByTutorId(tutorId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/grade-submission")
@@ -31,9 +42,9 @@ public class SubmissionController {
     }
 
     @PostMapping("/submit-assignment")
-    public ResponseEntity<?> submitAssignment(@RequestParam String studentId, @RequestParam String filePath, @RequestBody RequestSubmitAssignment requestSubmitAssignment){
+    public ResponseEntity<?> submitAssignment(@RequestParam String studentId, @RequestParam UUID assignmentId, @RequestBody RequestSubmitAssignment requestSubmitAssignment){
         try {
-            ResponseSubmitAssignment submitAssignment = submissionService.submitAssignment(studentId, filePath, requestSubmitAssignment);
+            ResponseSubmitAssignment submitAssignment = submissionService.submitAssignment(studentId, assignmentId, requestSubmitAssignment);
             return ResponseEntity.ok(submitAssignment);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

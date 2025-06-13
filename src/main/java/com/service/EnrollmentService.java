@@ -84,7 +84,10 @@ public class EnrollmentService {
     public List<EnrollmentDto> getEnrollmentByCourseId(UUID courseId) {
         courseRepository.findByCourseId(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
         return enrollmentRepository.findByCourseId(courseId).stream()
-                .map(DtoMapper::toEnrollmentDto)
-                .toList();
+                .map(enrollment -> {
+                    EnrollmentDto dto = DtoMapper.toEnrollmentDto(enrollment);
+                    dto.setStudent(DtoMapper.studentDto(enrollment.getStudent()));
+                    return dto;
+                }).toList();
     }
 }

@@ -4,15 +4,12 @@ import com.dto.CourseDto;
 import com.dto.TutorDto;
 import com.dto.assignment.RequestAssignment;
 import com.dto.assignment.ResponseAssignment;
-import com.entity.Assignment;
-import com.entity.Course;
-import com.entity.Tutor;
-import com.repository.AssignmentRepository;
-import com.repository.CourseRepository;
-import com.repository.TutorRepository;
+import com.entity.*;
+import com.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,13 +19,19 @@ public class AssignmentService {
     private final TutorRepository tutorRepository;
     private final AssignmentRepository assignmentRepository;
     private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final StudentRepository studentRepository;
+    private final EmailService emailService;
 
     public AssignmentService(TutorRepository tutorRepository,
                              AssignmentRepository assignmentRepository,
-                             CourseRepository courseRepository) {
+                             CourseRepository courseRepository, EnrollmentRepository enrollmentRepository, StudentRepository studentRepository, EmailService emailService) {
         this.tutorRepository = tutorRepository;
         this.assignmentRepository = assignmentRepository;
         this.courseRepository = courseRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.studentRepository = studentRepository;
+        this.emailService = emailService;
     }
 
 
@@ -56,6 +59,20 @@ public class AssignmentService {
         assignment.setTutor(tutor);
 
         Assignment savedAssignment = assignmentRepository.save(assignment);
+        List<Enrollment> enrollments = course.getEnrollments();
+        for (Enrollment enrollment : enrollments) {
+            StudentEntity student = enrollment.getStudent();
+            String email = student.getEmail();
+            String subject = "New Assignment " + savedAssignment.getTitle();
+            String content = "<p>New assignment details<p>"
+                    + savedAssignment.getDescription() + "</p>"
+                    + "<p>Due date: " + savedAssignment.getDueDate() + "</p>"
+                    + "<p> Max score for this project: " + savedAssignment.getMaxScore() + "</p>"
+                    + "<p> Course name: " + savedAssignment.getCourse().getTitle() + "</p>"
+                    + "<p> If you have any questions contact me " + savedAssignment.getTutor().getEmail() + "</p>"
+                    + "<p> " + savedAssignment.getTutor().getFirstName() + " " + savedAssignment.getTutor().getLastName() + "</p>";
+            emailService.sendConfirmationEmail(email, subject, content);
+        }
         return convertToResponseAssignment(savedAssignment);
     }
 
@@ -76,6 +93,7 @@ public class AssignmentService {
 
     public TutorDto convertToTutorDto(Tutor tutor) {
         TutorDto dto = new TutorDto();
+        dto.setTutorId(tutor.getTutorId());
         dto.setUsername(tutor.getUsername());
         dto.setFirstName(tutor.getFirstName());
         dto.setLastName(tutor.getLastName());

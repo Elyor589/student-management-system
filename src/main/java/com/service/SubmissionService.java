@@ -1,5 +1,6 @@
 package com.service;
 
+import com.dto.DtoMapper;
 import com.dto.TutorDto;
 import com.dto.submission.RequestSubmissionDto;
 import com.dto.submission.RequestSubmitAssignment;
@@ -13,6 +14,7 @@ import com.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +50,8 @@ public class SubmissionService {
         Tutor tutor = optionalTutor.get();
         Submission submission = getSubmission(tutorId, request, submissionId);
 
+        submission.setAssignment(submission.getAssignment());
+        submission.setStudent(submission.getStudent());
         submission.setScore(request.getScore());
         submission.setComments(request.getComment());
         submission.setGraded(true);
@@ -59,13 +63,25 @@ public class SubmissionService {
         return convertSubmissionToResponseSubmissionDto(gradedSubmission);
     }
 
+    public List<ResponseSubmitAssignment> getAllSubmissionsByTutorId(String tutorId) {
+        Optional<Tutor> optionalTutor = tutorRepository.findByTutorId(tutorId);
+        if (!optionalTutor.isPresent()) {
+            throw new RuntimeException("Tutor not found");
+        }
 
-    public ResponseSubmitAssignment submitAssignment(String studentId, String filePath, RequestSubmitAssignment request) {
+        Tutor tutor = optionalTutor.get();
+        return tutor.getAssignments().stream()
+                .flatMap(assignment -> assignment.getSubmissions().stream())
+                .map(DtoMapper::mapToSubmissionResponse)
+                .toList();
+    }
+
+    public ResponseSubmitAssignment submitAssignment(String studentId, UUID assignmentId, RequestSubmitAssignment request) {
         Optional<StudentEntity> optionalStudent = studentRepository.findByStudentId(studentId);
         if (!optionalStudent.isPresent()) {
             throw new RuntimeException("Student not found");
         }
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByAssignmentId(request.getAssignmentId());
+        Optional<Assignment> assignmentOptional = assignmentRepository.findByAssignmentId(assignmentId);
         if (!assignmentOptional.isPresent()) {
             throw new RuntimeException("Assignment not found");
         }
@@ -76,36 +92,27 @@ public class SubmissionService {
 
         StudentEntity student = optionalStudent.get();
 
-        if (!enrollmentRepository.existsByStudentIdAndCourseId(student.getStudentId(), request.getAssignmentId())) {
+        boolean enrolled = enrollmentRepository.isStudentEnrolledInCourseWithAssignment(studentId, assignmentId);
+        if (!enrolled) {
             throw new RuntimeException("Student is not enrolled in this course");
+        }
+
+        boolean isSubmitted = enrollmentRepository.existsBySubmissionIdAndAssignmentId(studentId, assignmentId);
+        if (isSubmitted) {
+            throw new RuntimeException("Already submitted");
         }
 
         Submission submission = new Submission();
         submission.setAssignment(assignment);
         submission.setStudent(student);
         submission.setTutor(assignment.getTutor());
-        submission.setFilePath(filePath);
+        submission.setFilePath(request.getFilePath());
         submission.setComments(request.getComment());
         submission.setSubmissionDate(LocalDateTime.now());
 
         Submission gradedSubmission = submissionRepository.save(submission);
-        return mapToSubmissionResponse(gradedSubmission);
+        return DtoMapper.mapToSubmissionResponse(gradedSubmission);
     }
-
-    private ResponseSubmitAssignment mapToSubmissionResponse(Submission submission) {
-        ResponseSubmitAssignment response = new ResponseSubmitAssignment();
-        response.setAssignmentId(submission.getAssignment().getAssignmentId());
-        response.setStudentId(submission.getStudent().getStudentId());
-        response.setSubmissionId(submission.getSubmissionId());
-        response.setAssignmentTitle(submission.getAssignment().getTitle());
-        response.setStudentName(submission.getStudent().getFirstName());
-        response.setSubmitDate(submission.getSubmissionDate());
-        response.setFileName(submission.getFilePath());
-        response.setComment(submission.getComments());
-        response.setMaxScore(submission.getScore());
-        return response;
-    }
-
 
 
     private Submission getSubmission(String tutorId, RequestSubmissionDto request, UUID submissionId) {
@@ -132,13 +139,14 @@ public class SubmissionService {
 
     private ResponseSubmissionDto convertSubmissionToResponseSubmissionDto(Submission submission) {
         ResponseSubmissionDto dto = new ResponseSubmissionDto();
+        dto.setAssignment(DtoMapper.convertAssignmentToAssignmentDto(submission.getAssignment()));
+        dto.setStudent(DtoMapper.studentDto(submission.getStudent()));
         dto.setScore(submission.getScore());
         dto.setComment(submission.getComments());
         dto.setGraded(submission.isGraded());
         dto.setSubmitDate(submission.getSubmissionDate());
         TutorDto tutorDto = assignmentService.convertToTutorDto(submission.getTutor());
         dto.setTutor(tutorDto);
-
         return dto;
     }
 }
