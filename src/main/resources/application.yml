@@ -33,4 +33,4 @@ jwt:
   secret: "supersecretkeythatshouldbeatleast32byteslong123"
 
 server:
-  port: 8081
+  port: 8088
