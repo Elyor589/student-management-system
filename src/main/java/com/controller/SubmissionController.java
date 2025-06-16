@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +29,16 @@ public class SubmissionController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getAllSubmissionsByStudentId")
+    public ResponseEntity<List<?>> getAllSubmissionsByStudentId(@RequestParam("studentId") String studentId) {
+        try {
+            List<ResponseSubmitAssignment> responseSubmitAssignments = submissionService.getAllSubmissionsByStudentId(studentId);
+            return ResponseEntity.ok(responseSubmitAssignments);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonList(e.getMessage()));
         }
     }
 

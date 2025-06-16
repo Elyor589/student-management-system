@@ -14,6 +14,7 @@ import com.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,6 +75,16 @@ public class SubmissionService {
                 .flatMap(assignment -> assignment.getSubmissions().stream())
                 .map(DtoMapper::mapToSubmissionResponse)
                 .toList();
+    }
+
+    public List<ResponseSubmitAssignment> getAllSubmissionsByStudentId(String studentId) {
+        Optional<StudentEntity> optionalStudent = studentRepository.findByStudentId(studentId);
+        if (!optionalStudent.isPresent()) {
+            throw new RuntimeException("Student not found");
+        }
+        StudentEntity student = optionalStudent.get();
+        List<Submission> submissionList = submissionRepository.findByStudentStudentId(student.getStudentId());
+        return convertSubmissionListToResponseSubmissionDtoList(submissionList);
     }
 
     public ResponseSubmitAssignment submitAssignment(String studentId, UUID assignmentId, RequestSubmitAssignment request) {
@@ -149,4 +160,28 @@ public class SubmissionService {
         dto.setTutor(tutorDto);
         return dto;
     }
+
+    private List<ResponseSubmitAssignment> convertSubmissionListToResponseSubmissionDtoList(List<Submission> submissionList) {
+        List<ResponseSubmitAssignment> responseSubmissionDtoList = new ArrayList<>();
+        for (Submission submission : submissionList) {
+            ResponseSubmitAssignment responseSubmissionDto = new ResponseSubmitAssignment();
+            responseSubmissionDto.setSubmissionId(submission.getSubmissionId());
+            responseSubmissionDto.setAssignmentId(submission.getAssignment().getAssignmentId());
+            responseSubmissionDto.setStudentId(submission.getStudent().getStudentId());
+            responseSubmissionDto.setStudentName(submission.getStudent().getFirstName());
+            responseSubmissionDto.setSubmitDate(submission.getSubmissionDate());
+            responseSubmissionDto.setFileName(submission.getFilePath());
+            responseSubmissionDto.setComment(submission.getComments());
+            responseSubmissionDto.setGraded(submission.isGraded());
+            responseSubmissionDto.setAssignment(DtoMapper.convertAssignmentToAssignmentDto(submission.getAssignment()));
+            responseSubmissionDtoList.add(responseSubmissionDto);
+        }
+        return responseSubmissionDtoList;
+    }
+
+//    private List<ResponseSubmissionDto> convertSubmissionListToResponseSubmissionDtoList(List<Submission> submissionList) {
+//        return submissionList.stream()
+//                .map(this::convertSubmissionToResponseSubmissionDto)
+//                .toList();
+//    }
 }

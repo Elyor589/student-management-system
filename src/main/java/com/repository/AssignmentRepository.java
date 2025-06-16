@@ -15,4 +15,9 @@ public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
 
     @Query("SELECT a FROM Assignment a WHERE a.tutor.tutorId = :tutorId AND a.course.courseId = :courseId")
     List<Assignment> findByTutorIdAndCourseId(String tutorId, UUID courseId);
+
+    List<Assignment> findByCourseCourseId(UUID courseId);
+
+    @Query("SELECT a FROM Assignment a WHERE a.dueDate < CURRENT_TIMESTAMP")
+    List<Assignment> findByDueDatePassedAssignments();
 }

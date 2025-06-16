@@ -15,4 +15,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
 
     @Query("SELECT s FROM Submission s WHERE s.student.studentId = :studentId AND s.assignment.course.courseId = :courseId")
     List<Submission> findByStudentIdAndCourseId(String studentId, UUID courseId);
+
+    List<Submission> findByStudentStudentId(String studentStudentId);
 }

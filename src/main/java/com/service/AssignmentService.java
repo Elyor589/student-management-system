@@ -9,6 +9,7 @@ import com.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,6 +77,26 @@ public class AssignmentService {
         return convertToResponseAssignment(savedAssignment);
     }
 
+    public List<ResponseAssignment> getAllAssignmentsByCourseId(UUID courseId) {
+        Optional<Course> optionalCourse = courseRepository.findByCourseId(courseId);
+        if (!optionalCourse.isPresent()) {
+            throw new RuntimeException("Course not found");
+        }
+        Course course = optionalCourse.get();
+        List<Assignment> courseList = assignmentRepository.findByCourseCourseId(course.getCourseId());
+        return convertAssignmentListToResponseAssignmentList(courseList);
+    }
+
+    public List<ResponseAssignment> getDeadlinePassedAssignmentsByCourseId(UUID courseId) {
+        Optional<Course> optionalCourse = courseRepository.findByCourseId(courseId);
+        if (!optionalCourse.isPresent()) {
+            throw new RuntimeException("Course not found");
+        }
+        List<Assignment> assignmentList = assignmentRepository.findByDueDatePassedAssignments();
+        return convertAssignmentListToResponseAssignmentList(assignmentList);
+
+    }
+
     public ResponseAssignment convertToResponseAssignment(Assignment assignment) {
         ResponseAssignment response = new ResponseAssignment();
         response.setTitle(assignment.getTitle());
@@ -91,9 +112,25 @@ public class AssignmentService {
         return response;
     }
 
+    public List<ResponseAssignment> convertAssignmentListToResponseAssignmentList(List<Assignment> assignmentList) {
+        List<ResponseAssignment> responseAssignments = new ArrayList<>();
+        for (Assignment assignment : assignmentList) {
+            ResponseAssignment responseAssignment = new ResponseAssignment();
+            responseAssignment.setTitle(assignment.getTitle());
+            responseAssignment.setDescription(assignment.getDescription());
+            responseAssignment.setMaxScore(assignment.getMaxScore());
+            responseAssignment.setDueDate(assignment.getDueDate());
+            responseAssignment.setCreatedAt(assignment.getCreatedAt());
+            responseAssignment.setCourse(convertToCourseDto(assignment.getCourse()));
+            responseAssignment.setTutor(convertToTutorDto(assignment.getTutor()));
+            responseAssignments.add(responseAssignment);
+        }
+
+        return responseAssignments;
+    }
+
     public TutorDto convertToTutorDto(Tutor tutor) {
         TutorDto dto = new TutorDto();
-        dto.setTutorId(tutor.getTutorId());
         dto.setUsername(tutor.getUsername());
         dto.setFirstName(tutor.getFirstName());
         dto.setLastName(tutor.getLastName());

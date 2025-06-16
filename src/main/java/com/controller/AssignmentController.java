@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,6 +24,26 @@ public class AssignmentController {
         try {
             ResponseAssignment response = assignmentService.createAssignment(tutorId, courseId, requestAssignment);
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getAllAssignmentsByCourseId")
+    public ResponseEntity<?> getAllAssignmentsByCourseId(@RequestParam UUID courseId){
+        try {
+            List<ResponseAssignment> allAssignmentsByCourseId = assignmentService.getAllAssignmentsByCourseId(courseId);
+            return ResponseEntity.ok(allAssignmentsByCourseId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getDeadlinePassedAssignmentsByCourseId")
+    public ResponseEntity<?> getDeadlinePassedAssignmentsByCourseId(@RequestParam UUID courseId){
+        try {
+            List<ResponseAssignment> deadlinePassedAssignmentsByCourseId = assignmentService.getDeadlinePassedAssignmentsByCourseId(courseId);
+            return ResponseEntity.ok(deadlinePassedAssignmentsByCourseId);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
