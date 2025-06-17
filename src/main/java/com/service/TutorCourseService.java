@@ -1,6 +1,7 @@
 package com.service;
 
 import com.dto.TutorCourseRequestDto;
+import com.dto.TutorCourseResponse;
 import com.entity.Course;
 import com.entity.Tutor;
 import com.entity.TutorCourse;
@@ -10,6 +11,7 @@ import com.repository.TutorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,20 +29,32 @@ public class TutorCourseService {
     }
 
     @Transactional
-    public TutorCourse assignTutorToCourse(UUID courseId, String tutorId, TutorCourseRequestDto request) {
+    public TutorCourseResponse assignTutorToCourse(UUID courseId, String tutorId, TutorCourseRequestDto request) {
         Course course = courseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         Tutor tutor = tutorRepository.findByTutorId(tutorId)
                 .orElseThrow(() -> new RuntimeException("Tutor not found"));
 
+        Optional<TutorCourse> optionalTutorCourse = tutorCourseRepository.findByCourseCourseId(courseId);
+        if (optionalTutorCourse.isPresent()) {
+            throw new RuntimeException("Tutor already assigned to course");
+        }
+
         TutorCourse tutorCourse = new TutorCourse();
-        tutorCourse.setTutorCourseId(UUID.randomUUID());
         tutorCourse.setCourse(course);
         tutorCourse.setTutor(tutor);
         tutorCourse.setSemester(request.getSemester());
         tutorCourse.setYear(request.getYear());
         tutorCourseRepository.save(tutorCourse);
-        return tutorCourse;
+        return new TutorCourseResponse(
+                tutorCourse.getTutorCourseId(),
+                tutorCourse.getSemester(),
+                tutorCourse.getYear(),
+                course.getCourseId(),
+                course.getTitle(),
+                tutor.getFirstName(),
+                tutor.getTutorId()
+        );
     }
 }
