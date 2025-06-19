@@ -1,5 +1,6 @@
 package com.security;
 
+import com.service.RegisterUserDetails;
 import com.service.StudentUserDetailsService;
 import com.service.TutorUserDetailsService;
 import jakarta.servlet.FilterChain;
@@ -19,15 +20,12 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final TutorUserDetailsService tutorUserDetailsService;
-    private final StudentUserDetailsService studentUserDetailsService;
+    private final RegisterUserDetails registerUserDetails;
 
     public JwtAuthFilter(JwtUtil jwtUtil,
-                         TutorUserDetailsService tutorUserDetailsService,
-                         StudentUserDetailsService studentUserDetailsService) {
+                         RegisterUserDetails registerUserDetails) {
         this.jwtUtil = jwtUtil;
-        this.tutorUserDetailsService = tutorUserDetailsService;
-        this.studentUserDetailsService = studentUserDetailsService;
+        this.registerUserDetails = registerUserDetails;
     }
 
     @Override
@@ -46,14 +44,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String role = jwtUtil.extractRole(token);
             UserDetails userDetails = null;
 
-            if ("student".equals(role)) {
-                userDetails = studentUserDetailsService.loadUserByUsername(username);
-            } else if ("tutor".equals(role)) {
-                userDetails = tutorUserDetailsService.loadUserByUsername(username);
-            } else {
-                filterChain.doFilter(request, response);
-                return;
-            }
+            userDetails = registerUserDetails.loadUserByUsername(username);
+            filterChain.doFilter(request, response);
 
             if (jwtUtil.validateJwtToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

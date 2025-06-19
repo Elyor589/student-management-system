@@ -13,15 +13,17 @@ public class DtoMapper {
         dto.setStudentId(student.getStudentId());
         dto.setFirstName(student.getFirstName());
         dto.setLastName(student.getLastName());
+        dto.setUsername(student.getUsername());
         dto.setEmail(student.getEmail());
         dto.setDateOfBirth(student.getDateOfBirth());
         dto.setAge(student.getAge());
         dto.setGender(student.getGender());
         dto.setPhoneNumber(student.getPhoneNumber());
+        dto.setRole(student.getRole());
 
-        List<EnrollmentDto> enrollmentDto = student.getEnrollments().stream()
-                .map(DtoMapper::toEnrollmentDto)
-                .toList();
+//        List<EnrollmentDto> enrollmentDto = student.getEnrollments().stream()
+//                .map(DtoMapper::toEnrollmentDto)
+//                .toList();
 
 //        dto.setEnrollments(enrollmentDto);
         return dto;
