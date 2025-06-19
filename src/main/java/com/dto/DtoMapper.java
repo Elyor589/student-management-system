@@ -48,8 +48,28 @@ public class DtoMapper {
                 .map(DtoMapper::toEnrollmentDto)
                 .toList();
 
+        List<TutorCourseResponse> tutorCourseResponses = course.getTutorCourses().stream()
+                        .map(DtoMapper::convertToTutorCourseResponse)
+                        .toList();
+
+        dto.setTutorCourses(tutorCourseResponses);
         dto.setEnrollments(enrollmentDto);
         return dto;
+    }
+
+    public static TutorCourseResponse convertToTutorCourseResponse(TutorCourse tutorCourse){
+        Tutor tutor = tutorCourse.getTutor();
+        Course course = tutorCourse.getCourse();
+
+        return new TutorCourseResponse(
+                tutorCourse.getTutorCourseId(),
+                tutorCourse.getSemester(),
+                tutorCourse.getYear(),
+                course.getCourseId(),
+                course.getTitle(),
+                tutor.getFirstName(),
+                tutor.getTutorId()
+        );
     }
 
     public static ResponseSubmitAssignment mapToSubmissionResponse(Submission submission) {

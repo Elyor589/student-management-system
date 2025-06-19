@@ -9,5 +9,6 @@ import java.util.UUID;
 public class CourseDto {
     private UUID courseId;
     private String courseTitle;
+    private List<TutorCourseResponse> tutorCourses;
     private List<EnrollmentDto> enrollments;
 }
