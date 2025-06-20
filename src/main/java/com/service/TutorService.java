@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +23,7 @@ public class TutorService {
     private final PasswordEncoder passwordEncoder;
     private final CourseRepository courseRepository;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final AssignmentService assignmentService;
 
     public TutorDto createTutor(TutorDto tutorDto) {
         Tutor tutor = new Tutor();
@@ -66,6 +68,12 @@ public class TutorService {
         tutorDto.setBirthDate(tutor.getBirthDate());
         tutorDto.setDepartment(tutor.getDepartment());
         return tutorDto;
+    }
+
+    public List<TutorDto> getAllTutors() {
+        List<Tutor> tutorList = tutorRepository.findAll();
+        return tutorList.stream().map(assignmentService::convertToTutorDto)
+                .collect(Collectors.toList());
     }
 
     public AssignmentStatsResponse getAssignmentStatsByCourseId(UUID courseId) {

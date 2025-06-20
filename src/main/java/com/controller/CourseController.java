@@ -15,13 +15,14 @@ public class CourseController {
 
     private final CourseService courseService;
 
+
     public CourseController(CourseService courseService) {
         this.courseService = courseService;
     }
 
     @GetMapping("/getAllCourses")
-    public List<CourseDto> getAllCourses() {
-        return courseService.getAllCourses();
+    public ResponseEntity<List<CourseDto>> getAllCourses() {
+        return ResponseEntity.ok(courseService.getAllCourses());
     }
 
     @PostMapping("/create-course")

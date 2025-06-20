@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.dto.assignment.AssignmentSubmissionStats;
 import com.dto.assignment.RequestAssignment;
 import com.dto.assignment.ResponseAssignment;
 import com.service.AssignmentService;
@@ -44,6 +45,16 @@ public class AssignmentController {
         try {
             List<ResponseAssignment> deadlinePassedAssignmentsByCourseId = assignmentService.getDeadlinePassedAssignmentsByCourseId(courseId);
             return ResponseEntity.ok(deadlinePassedAssignmentsByCourseId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getAssignmentsSubmittedByAllStudent")
+    public ResponseEntity<?> getAssignmentsSubmittedByAllStudent(@RequestParam UUID courseId){
+        try {
+            List<AssignmentSubmissionStats> assignmentsSubmittedByAllStudents = assignmentService.getAssignmentsSubmittedByAllStudents(courseId);
+            return ResponseEntity.ok(assignmentsSubmittedByAllStudents);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

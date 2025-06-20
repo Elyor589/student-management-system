@@ -29,4 +29,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
     @Query("SELECT e FROM Enrollment e WHERE e.student.studentId = :studentId AND e.course.courseId = :courseId")
     Optional<Enrollment> findByStudentIdAndCourseId(@Param("studentId") String studentId, @Param("courseId") UUID courseId);
+
+    Long countByCourseCourseId(UUID courseId);
 }

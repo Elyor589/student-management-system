@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +22,11 @@ public class TutorController {
     @PostMapping("/create-tutor")
     public TutorDto createTutor(@RequestBody TutorDto tutorDto) {
         return tutorService.createTutor(tutorDto);
+    }
+
+    @GetMapping("/getAllTutors")
+    public ResponseEntity<List<TutorDto>> getAllTutors() {
+        return ResponseEntity.ok(tutorService.getAllTutors());
     }
 
     @GetMapping("/getTutorByTutorId")
