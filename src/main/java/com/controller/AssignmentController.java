@@ -59,4 +59,14 @@ public class AssignmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/getAssignmentByAssignmentId")
+    public ResponseEntity<?> getAssignmentByAssignmentId(@RequestParam UUID assignmentId){
+        try {
+            ResponseAssignment responseAssignment = assignmentService.getAssignmentByAssignmentId(assignmentId);
+            return ResponseEntity.ok(responseAssignment);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

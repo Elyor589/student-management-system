@@ -120,6 +120,15 @@ public class AssignmentService {
         return assignmentSubmissionStatsList;
     }
 
+    public ResponseAssignment getAssignmentByAssignmentId(UUID assignmentId) {
+        Optional<Assignment> optionalAssignment = assignmentRepository.findByAssignmentId(assignmentId);
+        if(!optionalAssignment.isPresent()) {
+            throw new RuntimeException("Assignment not found");
+        }
+        Assignment assignment = optionalAssignment.get();
+        return convertToResponseAssignment(assignment);
+    }
+
     public AssignmentSubmissionStats convertToAssignmentSubmissionStats(AssignmentSubmissionStats assignment, Long completed, Long enrolled) {
         AssignmentSubmissionStats stats = new AssignmentSubmissionStats();
         stats.setAssignmentId(assignment.getAssignmentId());

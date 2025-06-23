@@ -1,8 +1,6 @@
 package com.security;
 
 import com.service.RegisterUserDetails;
-import com.service.StudentUserDetailsService;
-import com.service.TutorUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,13 +46,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
             if (jwtUtil.validateJwtToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                setAuthenticationContext(token, request,userDetails);
+                filterChain.doFilter(request, response);
             }
         }
 
         filterChain.doFilter(request, response);
     }
+
+    private void setAuthenticationContext(String token, HttpServletRequest request,UserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
 
 }

@@ -18,12 +18,12 @@ public class GradeController {
     }
 
     @PostMapping("/calculate-student-score")
-    public ResponseEntity<GradeResponse> calculateStudentScore(@RequestParam String tutorId, @RequestParam UUID courseId, @RequestParam String studentId) {
+    public ResponseEntity<?> calculateStudentScore(@RequestParam String tutorId, @RequestParam UUID courseId, @RequestParam String studentId) {
         try {
             GradeResponse response = gradeService.calculateFinalGrade(tutorId, courseId, studentId);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

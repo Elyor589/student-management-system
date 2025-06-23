@@ -2,10 +2,7 @@ package com.service;
 
 import com.dto.DtoMapper;
 import com.dto.TutorDto;
-import com.dto.submission.RequestSubmissionDto;
-import com.dto.submission.RequestSubmitAssignment;
-import com.dto.submission.ResponseSubmissionDto;
-import com.dto.submission.ResponseSubmitAssignment;
+import com.dto.submission.*;
 import com.entity.Assignment;
 import com.entity.StudentEntity;
 import com.entity.Submission;
@@ -18,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class SubmissionService {
@@ -97,9 +95,9 @@ public class SubmissionService {
             throw new RuntimeException("Assignment not found");
         }
         Assignment assignment = assignmentOptional.get();
-        if (LocalDateTime.now().isAfter(assignment.getDueDate())){
-            throw new RuntimeException("Submission deadline has passed");
-        }
+//        if (LocalDateTime.now().isAfter(assignment.getDueDate())){
+//            throw new RuntimeException("Submission deadline has passed");
+//        }
 
         StudentEntity student = optionalStudent.get();
 
@@ -146,6 +144,32 @@ public class SubmissionService {
             throw new RuntimeException("Score is greater than max score");
         }
         return submission;
+    }
+
+    public List<ResponseSubmitAssignment> getAllSubmissionByAssignmentId(UUID assignmentId) {
+        Optional<Assignment> optionalAssignment = assignmentRepository.findByAssignmentId(assignmentId);
+        if (!optionalAssignment.isPresent()) {
+            throw new RuntimeException("Assignment not found");
+        }
+        Assignment assignment = optionalAssignment.get();
+        List<Submission> submissionList = assignment.getSubmissions();
+        return convertSubmissionListToResponseSubmissionDtoList(submissionList);
+    }
+
+    public List<ResponseNotSubmittedDto> getNotSubmittedSubmissionsByAssignmentId(UUID assignmentId) {
+        Optional<Assignment> optionalAssignment = assignmentRepository.findByAssignmentId(assignmentId);
+        if (!optionalAssignment.isPresent()){
+            throw new RuntimeException("Assignment not found");
+        }
+        Assignment assignment = optionalAssignment.get();
+        List<ResponseSubmitAssignmentInterface> notSubmittedDtoList = submissionRepository.findNotSubmittedSubmissionsByAssignmentId(assignment.getAssignmentId());
+        return notSubmittedDtoList.stream().map(r -> {
+            ResponseNotSubmittedDto responseNotSubmittedDto = new ResponseNotSubmittedDto();
+            responseNotSubmittedDto.setStudentId(r.getStudentId());
+            responseNotSubmittedDto.setStudentFirstName(r.getStudentFirstName());
+            responseNotSubmittedDto.setStudentLastName(r.getStudentLastName());
+            return responseNotSubmittedDto;
+        }).collect(Collectors.toList());
     }
 
     private ResponseSubmissionDto convertSubmissionToResponseSubmissionDto(Submission submission) {
